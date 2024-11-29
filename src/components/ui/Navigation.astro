@@ -1,0 +1,24 @@
+---
+const menu = [
+    { name: 'Listado', link: '/' },
+    { name: 'Paginate', link: '/pokemons/1' },
+    {name:'Favorites', link:'/favorites'}
+];
+const pathname= Astro.url.pathname;
+
+console.log({pathname})
+---
+<nav class="">
+    <div class="container flex items-center justify-center p-6 mx-auto text-gray-600 capitalize dark:text-gray-300">
+        {
+            menu.map(({link,name}) => (
+                <a href={link}
+                transition:name="fade"
+                 class:list={["text-gray-800 dark:text-gray-200 mx-1.5 sm:mx-6",
+                    {
+                        'border-b-2 border-blue-500': pathname === link
+                    }
+                ]}>{name}</a>))
+        }
+    </div>
+</nav>
