@@ -2,9 +2,9 @@
 import Title from '@components/ui/Title.astro';
 import type { PokemonListResponse } from '@interfaces/pokemon-list.response';
 import type { GetStaticPaths } from 'astro';
-
 import PokemonCard from '@components/pokemons/PokemonCard.astro';
 import MainLayout from '@layouts/MainLayout.astro';
+import { Icon } from 'astro-icon/components';
 
 export const getStaticPaths = (async () => {
   const resp = await fetch('https://pokeapi.co/api/v2/pokemon?limit=151');
@@ -12,7 +12,7 @@ export const getStaticPaths = (async () => {
 
   return results.map(({ name, url }) => ({
     params: { name: name },
-    props: { name: name, url: url },
+    props: { name: name, url: url }
   }));
 
   // return [
@@ -35,22 +35,25 @@ const audioSrc = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pok
 const imageSrc = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
 ---
 
-<MainLayout
-  title={`Pokémon - #${id} ${name}`}
-  description={`Información sobre el pokémon ${name}`}
-  image={imageSrc}
->
-  <section class="mt-10 mx-10 flex flex-col justify-center items-center">
-    <div>
-      <button onclick="history.back()"
-       class="text-blue-500 m-2">Regresar</button>
-      <Title>{name}</Title>
+<MainLayout title={`Pokémon - #${id} ${name}`} description={`Información sobre el pokémon ${name}`} image={imageSrc}>
+  <section class='mt-10 mx-10 flex flex-col justify-center items-center'>
+    <div class='flex flex-row items-end space-x-6'>
+      <div>
+        <button onclick='history.back()' class='text-blue-500 m-2'>Regresar</button>
+        <Title>{name}</Title>
+      </div>
+      <div>
+        <button id='btnFavorite' type='button' class='hover:animate-pulse' data-name={name} data-id={id}>
+          <Icon name='heart-alt' class='w-12 h-12 text-red-500 hidden' />
+          <Icon name='heart-full' class='w-12 h-12 text-red-500' />
+        </button>
+      </div>
     </div>
 
     <PokemonCard name={name} url={url} isBig />
 
-    <audio controls class="mt-5">
-      <source src={audioSrc} type="audio/ogg" />
+    <audio controls class='mt-5'>
+      <source src={audioSrc} type='audio/ogg' />
       Your browser does not support the audio element.
     </audio>
   </section>
@@ -61,3 +64,46 @@ const imageSrc = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprit
     @apply hover:underline text-blue-500;
   }
 </style>
+<script>
+  interface Pokemon {
+    name: string;
+    id: string;
+  }
+  document.addEventListener('astro:page-load', () => {
+    const btnFavorite = document.getElementById('btnFavorite') as HTMLButtonElement;
+
+    if (!btnFavorite) return;
+
+    const favorites: Pokemon[] = JSON.parse(localStorage.getItem('favorites') || '[]');
+
+    const pokeName = btnFavorite.dataset.name || '';
+    const pokeId = btnFavorite.dataset.id || '';
+
+    const isFavorite = favorites.some((pokemon) => pokemon.id === pokeId);
+
+    if (isFavorite) {
+      btnFavorite.children[0].classList.remove('hidden');
+      btnFavorite.children[1].classList.add('hidden');
+    }
+
+    btnFavorite.addEventListener('click', () => {
+      if (favorites.some((pokemon) => pokemon.id === pokeId)) {
+        const index = favorites.findIndex((pokemon) => pokemon.id === pokeId);
+
+        favorites.splice(index, 1);
+        btnFavorite.children[0].classList.add('hidden');
+        btnFavorite.children[1].classList.remove('hidden');
+      } else {
+        favorites.push({
+          name: pokeName,
+          id: pokeId
+        });
+
+        btnFavorite.children[0].classList.remove('hidden');
+        btnFavorite.children[1].classList.add('hidden');
+      }
+
+      localStorage.setItem('favorites', JSON.stringify(favorites));
+    });
+  });
+</script>

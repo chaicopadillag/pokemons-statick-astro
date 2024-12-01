@@ -1,0 +1,11 @@
+---
+import { Counter } from '@components/counter/index';
+import Title from '@components/ui/Title.astro';
+import MainLayout from '@layouts/MainLayout.astro';
+---
+
+<MainLayout title='Islands'>
+  <Counter initialCount={10} transition:persist='counter' transition:persist-props client:visible>
+    <Title> Counter</Title>
+  </Counter>
+</MainLayout>
